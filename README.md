@@ -130,10 +130,13 @@ The project uses SQL queries to extract valuable insights, such as:
 - **Impact of Vaccinations on Death Rates**: Analysis comparing vaccination rates with death rates.
 - **Healthcare Indicators**: Queries to explore correlations between healthcare infrastructure (e.g., ICU beds, hospital beds, etc.) and COVID-19 outcomes.
 
-### 1. Count the Number of Movies vs TV Shows
+### 1. Looking at Total Cases VS Total Deaths it Shows the Likelihood of dying if you get infected by corona virus in India
 ```sql
-SELECT TYPE, COUNT(TYPE) AS TOTAL_COUNT FROM NETFLIX_TITLES
-GROUP BY TYPE
-ORDER BY TOTAL_COUNT DESC;
+SELECT LOCATION, DATE,TOTAL_DEATHS, TOTAL_CASES,
+(CAST(TOTAL_DEATHS AS FLOAT)/NULLIF(TOTAL_CASES,0)) *100 
+AS DEATH_PERCENTAGE
+FROM COVID_DEATHS
+WHERE LOCATION LIKE'%India%'
+ORDER BY 1,2;
 GO
 ```
