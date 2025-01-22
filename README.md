@@ -129,3 +129,11 @@ The project uses SQL queries to extract valuable insights, such as:
 - **Vaccination Trends**: Queries to track vaccination rates and progress.
 - **Impact of Vaccinations on Death Rates**: Analysis comparing vaccination rates with death rates.
 - **Healthcare Indicators**: Queries to explore correlations between healthcare infrastructure (e.g., ICU beds, hospital beds, etc.) and COVID-19 outcomes.
+
+### 1. Count the Number of Movies vs TV Shows
+```sql
+SELECT TYPE, COUNT(TYPE) AS TOTAL_COUNT FROM NETFLIX_TITLES
+GROUP BY TYPE
+ORDER BY TOTAL_COUNT DESC;
+GO
+```
