@@ -1,5 +1,5 @@
 # COVID-19 Analysis: COVID Deaths and Vaccinations
-
+![Corona Analysis LOGO](https://github.com/BERLINSAMUELRAJ/COVID-19-Analysis/blob/main/GITHUB%20INSIDE.jpeg)
 This project contains an SQL-based analysis of COVID-19 deaths and vaccinations, based on two datasets:
 
 - **COVID Deaths**: Data related to COVID-19 cases, deaths, and other health indicators.
