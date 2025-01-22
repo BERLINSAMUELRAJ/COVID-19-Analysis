@@ -140,3 +140,152 @@ WHERE LOCATION LIKE'%India%'
 ORDER BY 1,2;
 GO
 ```
+
+### 2. Looking at Total Cases VS Population it Shows what percentage of population got COVID19
+```sql
+SELECT LOCATION, DATE,TOTAL_CASES, POPULATION,
+(CAST(TOTAL_DEATHS AS FLOAT)/NULLIF(POPULATION,0)) *100 
+AS "PERCENTAGE OF POPULATION INFECTED"
+FROM COVID_DEATHS
+ORDER BY 1,2;
+GO
+```
+### 3. Looking at Countries with Highest Infection  rate compared to Population
+```sql
+SELECT LOCATION,POPULATION, MAX(TOTAL_CASES) AS "HIGHEST INFECTION COUNT", 
+MAX((CAST(TOTAL_CASES AS FLOAT)/NULLIF(POPULATION,0))) *100 
+AS PERCENTAGE_OF_POPULATION_INFECTED
+FROM COVID_DEATHS
+GROUP BY LOCATION, POPULATION
+ORDER BY PERCENTAGE_OF_POPULATION_INFECTED DESC;
+GO
+```
+### 4. Looking at countries with Highest Death Count
+```sql
+SELECT LOCATION, MAX(Total_deaths) as "Total Death Count"
+FROM COVID_DEATHS
+WHERE continent IS NOT NULL
+GROUP BY LOCATION
+ORDER BY "Total Death Count" DESC;
+GO
+```
+### 5. Looking at Continents with Highest Death Count
+```sql
+SELECT continent, MAX(Total_deaths) as "Total Death Count"
+FROM COVID_DEATHS
+WHERE continent IS NOT NULL
+GROUP BY continent
+ORDER BY "Total Death Count" DESC;
+GO
+```
+### 6. GLOBAL NUMBERS OF DEATH PERCENTAGE BASED ON TOTAL_CASES AND TOTAL_DEATHS & Find the DeathPercentage based on Timeline
+```sql
+SELECT 
+    DATE, 
+    SUM(NEW_CASES) AS TOTAL_CASES, 
+    SUM(NEW_DEATHS) AS TOTAL_DEATHS,
+    CASE 
+        WHEN SUM(NEW_CASES) != 0 THEN (CAST(SUM(NEW_DEATHS) AS FLOAT) / SUM(NEW_CASES)) * 100
+        ELSE 0 
+    END AS DEATH_PERCENTAGE
+FROM COVID_DEATHS
+WHERE CONTINENT IS NOT NULL
+GROUP BY [DATE]
+ORDER BY DATE;
+GO
+```
+### 7. Total Cases, Total Deaths and Death Percentage (Overall)
+```sql
+SELECT  
+    SUM(NEW_CASES) AS TOTAL_CASES, 
+    SUM(NEW_DEATHS) AS TOTAL_DEATHS,
+    CASE 
+        WHEN SUM(NEW_CASES) != 0 THEN (CAST(SUM(NEW_DEATHS) AS FLOAT) / SUM(NEW_CASES)) * 100
+        ELSE 0 
+    END AS DEATH_PERCENTAGE
+FROM COVID_DEATHS
+WHERE CONTINENT IS NOT NULL
+ORDER BY 1,2;
+GO
+```
+### 8. LOOKING AT TOTAL POPULATION VS VACCINATIONS
+```sql
+SELECT DEA.continent, DEA.location, DEA.date, DEA.population, VAC.new_vaccinations,
+SUM(CAST(VAC.new_vaccinations AS INT)) OVER(PARTITION BY DEA.LOCATION
+ORDER BY DEA.LOCATION, DEA.DATE) AS "ROLLING PEOPLE VACCINATED"
+FROM COVID_VACCINATIONS VAC
+JOIN COVID_DEATHS DEA
+ON VAC.location = DEA.location AND 
+VAC.date = DEA. date
+WHERE DEA.continent IS NOT NULL
+ORDER BY 2,3;
+GO
+```
+### 9. VACCINATION PERCENTAGE
+```sql
+WITH PopVsVac (CONTINENT, LOCATION, DATE, POPULATION, NEW_VACCINATIONS,
+ROLLINGPEOPLEVACCINATED)
+AS(
+SELECT DEA.continent, DEA.location, DEA.date, DEA.population, VAC.new_vaccinations,
+SUM(CAST(VAC.new_vaccinations AS INT)) OVER(PARTITION BY DEA.LOCATION
+ORDER BY DEA.LOCATION, DEA.DATE) AS "ROLLING PEOPLE VACCINATED"
+FROM COVID_VACCINATIONS VAC
+JOIN COVID_DEATHS DEA
+ON VAC.location = DEA.location AND 
+VAC.date = DEA. date
+WHERE DEA.continent IS NOT NULL
+)
+SELECT *, 
+       (CAST(ROLLINGPEOPLEVACCINATED AS FLOAT) / 
+        NULLIF(POPULATION, 0) * 100) AS VaccinationPercentage
+FROM PopVsVac
+GO
+```
+### 10. TEMP TABLE
+```sql
+DROP TABLE IF EXISTS #PercentPopulationVaccinated
+Create table #PercentPopulationVaccinated
+(
+continent nvarchar(255),
+location nvarchar(255),
+date datetime,
+population numeric,
+New_vaccinations numeric,
+ROLLINGPEOPLEVACCINATED numeric
+)
+insert into #PercentPopulationVaccinated
+SELECT DEA.continent, DEA.location, TRY_CAST(DEA.date AS DATETIME) AS date, 
+TRY_CAST(DEA.population AS NUMERIC) AS population, 
+TRY_CAST(VAC.new_vaccinations AS NUMERIC) AS new_vaccinations,
+SUM(CAST(VAC.new_vaccinations AS INT)) OVER(PARTITION BY DEA.LOCATION
+ORDER BY DEA.LOCATION, DEA.DATE) AS "ROLLING PEOPLE VACCINATED"
+FROM COVID_VACCINATIONS VAC
+JOIN COVID_DEATHS DEA
+ON VAC.location = DEA.location AND 
+VAC.date = DEA. date
+
+SELECT *, 
+       CASE 
+           WHEN POPULATION > 0 THEN 
+               (CAST(ROLLINGPEOPLEVACCINATED AS FLOAT) / POPULATION * 100)
+           ELSE 0
+       END AS VaccinationPercentage
+FROM #PercentPopulationVaccinated
+```
+### 11. Creating Views to store data for later visualizations
+```sql
+Create View PercentPopulationVaccinated as
+
+SELECT DEA.continent, DEA.location, DEA.date, DEA.population, VAC.new_vaccinations,
+SUM(CAST(VAC.new_vaccinations AS INT)) OVER(PARTITION BY DEA.LOCATION
+ORDER BY DEA.LOCATION, DEA.DATE) AS "ROLLING PEOPLE VACCINATED"
+FROM COVID_VACCINATIONS VAC
+JOIN COVID_DEATHS DEA
+ON VAC.location = DEA.location AND 
+VAC.date = DEA. date
+WHERE DEA.continent IS NOT NULL;
+GO
+
+SELECT * FROM PercentPopulationVaccinated;
+GO
+```
