@@ -5,6 +5,12 @@ This project contains an SQL-based analysis of COVID-19 deaths and vaccinations,
 - **COVID Deaths**: Data related to COVID-19 cases, deaths, and other health indicators.
 - **COVID Vaccinations**: Data on the progress of COVID-19 vaccination efforts.
 
+## Dataset
+
+The data for this project is sourced from the Kaggle dataset:
+
+- **Dataset Link:** [COVID-19 Dataset](https://ourworldindata.org/covid-deaths)
+
 ## Project Overview
 
 The goal of this project is to provide insights into the relationship between COVID-19 vaccination rates and COVID-19 deaths across various regions and time periods. By analyzing this data, we aim to assess trends, compare death rates with vaccination coverage, and explore other factors such as healthcare infrastructure and socio-economic conditions.
